@@ -4,17 +4,13 @@
 *.o
 *.obj
 
-# Precompiled Headers
-*.gch
-*.pch
+*.moc
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+#builds folder
+build/
 
-# Fortran module files
-*.mod
+#qtcreator files
+*.pro.user
 
 # Compiled Static libraries
 *.lai
@@ -23,6 +19,4 @@
 *.lib
 
 # Executables
-*.exe
 *.out
-*.app
