@@ -6,7 +6,9 @@
 #include <QTcpSocket>
 #include <QDebug>
 
-class Server : public QObject
+#include "../connection.h"
+
+class Server : public QTcpServer
 {
     Q_OBJECT
 
@@ -18,8 +20,6 @@ public slots:
     void newConnection();
 
 private:
-  //  Ui::MainWindow *ui;
-    QTcpServer *server_;
 
 
 };

@@ -1,38 +1,34 @@
 #include "server.h"
-#include "ui_client.h"
 
 Server::Server(QObject *parent) :
-    QObject(parent)
+    QTcpServer(parent)
     //ui(new Ui::MainWindow)
 {
-    server_ = new QTcpServer(this);
-    connect(server_,SIGNAL(newConnection()),this,SLOT(newConnection()));
 
     //Every adress, on port 1234
-    if(!server_->listen(QHostAddress::Any,1234))
+    if(!listen(QHostAddress::Any,1234))
     {
         qDebug() << "Server could not start";
     }
     else
     {
         qDebug() << "Server started";
+        connect(this,SIGNAL(newConnection()),this,SLOT(newConnection()));
     }
+
 }
 
 
 
 void Server::newConnection()
 {
-    QTcpSocket *socketClient = server_->nextPendingConnection();
+    QTcpSocket *socketClient = nextPendingConnection();
+    Connection *client = new Connection(socketClient);
     qDebug() << "New connection !";
-    socketClient->write("hello wolrd");
-    socketClient->flush();
-    socketClient->waitForBytesWritten(3000);
-    socketClient->close();
 }
 
 Server::~Server()
 {
-    delete server_;
+
    // delete ui;
 }
