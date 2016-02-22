@@ -58,21 +58,43 @@ border-radius: 25px;
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="1">
         <layout class="QGridLayout" name="gridLayout_3">
-         <item row="1" column="1">
-          <widget class="QPushButton" name="pushButton">
+         <item row="1" column="0" colspan="2">
+          <widget class="QLineEdit" name="sayLineEdit"/>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="talkButton">
            <property name="text">
-            <string>PushButton</string>
+            <string>Talk !</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QLineEdit" name="sayLineEdit"/>
-         </item>
-         <item row="0" column="0">
+         <item row="0" column="0" colspan="2">
           <widget class="QTextEdit" name="roomTextEdit"/>
          </item>
-         <item row="0" column="1">
-          <widget class="QListWidget" name="userListWidget"/>
+         <item row="0" column="2">
+          <widget class="QListWidget" name="userListWidget">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>120</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="sortingEnabled">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>

@@ -8,12 +8,15 @@ INCLUDEPATH += .
 QT += designer uitools core gui network
 
 
-RESOURCES += images.qrc
+RESOURCES +=
 
-FORMS   += MainWindow.ui 
+FORMS   += \ 
+    justalkclient.ui
 
-HEADERS += MainWindow.h 
+HEADERS += \ 
+    justalkclient.h
 
-SOURCES += MainWindow.cpp \
-           main.cpp
+SOURCES += \
+           main.cpp \
+    justalkclient.cpp
 

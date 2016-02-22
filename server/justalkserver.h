@@ -18,9 +18,7 @@ class JustTalkServer : public QTcpServer
         void readyRead();
         void disconnected();
         void sendUserList();
-
-    protected:
-        void incomingConnection(int socketfd);
+        void incomingConnection();
 
     private:
         QSet<QTcpSocket*> clients;

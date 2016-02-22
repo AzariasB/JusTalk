@@ -3,14 +3,15 @@
 #include <QTcpSocket>
 #include <QRegExp>
 
-JustTalkServer::JustTalkServer(QObject *parent) : QTcpServer(parent)
+JustTalkServer::JustTalkServer(QObject *parent) :
+    QTcpServer(parent)
 {
+    connect(this,SIGNAL(newConnection()),this,SLOT(incomingConnection()));
 }
 
-void JustTalkServer::incomingConnection(int socketfd)
+void JustTalkServer::incomingConnection()
 {
-    QTcpSocket *client = new QTcpSocket(this);
-    client->setSocketDescriptor(socketfd);
+    QTcpSocket *client = nextPendingConnection();
     clients.insert(client);
 
     qDebug() << "New client from:" << client->peerAddress().toString();
