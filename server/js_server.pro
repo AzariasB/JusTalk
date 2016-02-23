@@ -1,11 +1,23 @@
+
 TEMPLATE = app
-TARGET = server
+
 DEPENDPATH += .
+TARGET = server
 INCLUDEPATH += .
 
-QT += designer core gui network
+
+QT += designer uitools core gui network
+
+
+RESOURCES +=
+
+FORMS   += \
+    server.ui
 
 HEADERS += \
     justalkserver.h
-SOURCES += main.cpp \
+
+SOURCES += \
+           main.cpp \
     justalkserver.cpp
+
