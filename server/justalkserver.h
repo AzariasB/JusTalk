@@ -32,8 +32,7 @@ class JustTalkServer : public QMainWindow , public Ui::MainWindow
         void incomingConnection();
         void refreshUserList();
 
-    private:
-
+    private:        
         QTcpServer *server_;
 
         QSet<QTcpSocket*> clients_;

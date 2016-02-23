@@ -17,15 +17,27 @@ JusTalkClient::JusTalkClient(QWidget *parent) :
     connect(socket_, SIGNAL(readyRead()), this, SLOT(readyRead()));
     connect(socket_, SIGNAL(connected()), this, SLOT(connected()));
     connect(socket_, SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(handlError(QAbstractSocket::SocketError)));
-    connect(talkButton,SIGNAL(clicked()), this, SLOT(talkClicked()));
     connect(userListWidget,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(roomContextMenu(QPoint)));
+    connect(talkButton,SIGNAL(clicked()), this, SLOT(talkClicked()));
     connect(sayLineEdit,SIGNAL(returnPressed()),this,SLOT(talkClicked()));
 }
 
 void JusTalkClient::roomContextMenu(QPoint p)
 {
-    //Create a point
-    qDebug() << p;
+    QPoint globalPos = userListWidget->mapToGlobal(p);
+
+    QMenu ctxMenu;
+    ctxMenu.addAction("Wisper",this,SLOT(wisperTo()));
+
+    ctxMenu.exec(globalPos);
+}
+
+void JusTalkClient::wisperTo()
+{
+    foreach (QListWidgetItem *item, userListWidget->selectedItems()) {
+        sayLineEdit->setText("@" + item->text());
+        sayLineEdit->setFocus();
+    }
 }
 
 

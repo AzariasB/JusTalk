@@ -59,12 +59,25 @@ void JustTalkServer::readyRead()
         else if(users_.contains(client))
         {
             QString message = line;
-            QString user = users_[client];
-            qDebug() << "User:" << user;
-            qDebug() << "Message:" << message;
+            QRegExp wisper("^@([^ ]+) (.*)");
+            if(wisper.indexIn(message) == 0){
+                QString userPseudo = wisper.cap(1);
+                QString wisperMesssage = wisper.cap(2);
+                for(auto it = users_.begin(); it != users_.end();++it){
+                    if(it.value() == userPseudo){
+                        QString res = QString(userPseudo + ":" + wisperMesssage + "\n");
+                        qDebug() << res;
+                        it.key()->write(res.toUtf8());
+                    }
+                }
+            }else{
+                QString user = users_[client];
+                qDebug() << "User:" << user;
+                qDebug() << "Message:" << message;
 
-            foreach(QTcpSocket *otherClient, clients_)
-                otherClient->write(QString(user + ":" + message + "\n").toUtf8());
+                foreach(QTcpSocket *otherClient, clients_)
+                    otherClient->write(QString(user + ":" + message + "\n").toUtf8());
+            }
         }
         else
         {

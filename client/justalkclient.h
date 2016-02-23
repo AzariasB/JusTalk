@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QMenu>
 
 #include "ui_justalkclient.h"
 
@@ -42,6 +43,9 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
         void handlError(QAbstractSocket::SocketError er);
 
         void roomContextMenu(QPoint p);
+
+    private slots:
+        void wisperTo();
 
     private:
 

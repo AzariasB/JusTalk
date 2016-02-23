@@ -5,6 +5,7 @@ DEPENDPATH += .
 TARGET = server
 INCLUDEPATH += .
 
+CONFIG += c++11
 
 QT += designer uitools core gui network
 
