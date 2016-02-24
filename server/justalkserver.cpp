@@ -9,6 +9,15 @@ JustTalkServer::JustTalkServer(QObject *parent) :
     setupUi(this);
     connect(server_,SIGNAL(newConnection()),this,SLOT(incomingConnection()));
     connect(quitButton,SIGNAL(clicked(bool)),this,SLOT(close()));
+    addActions();
+
+}
+
+void JustTalkServer::addActions()
+{
+    actions_.addAction("^/me:(.*)$","readUserPresentation");
+    actions_.addAction("^@([^ ]+) (.*)","readUserWisper");
+    actions_.addAction("^(.*)$","readUserMessage");
 }
 
 bool JustTalkServer::listen(QHostAddress::SpecialAddress host, int port)
@@ -36,53 +45,54 @@ void JustTalkServer::refreshUserList()
     }
 }
 
+void JustTalkServer::readUserPresentation(QRegExp reg, QString str)
+{
+    QString user = reg.cap(1);
+    if(!users_.contains(currentClient_)){
+        users_[currentClient_] = user;
+        refreshUserList();
+
+        foreach(QTcpSocket *client, clients_)
+            client->write(QString("Server:" + user + " has joined.\n").toUtf8());
+        sendUserList();
+    }
+}
+
+void JustTalkServer::readUserWisper(QRegExp reg, QString)
+{
+    QString userPseudo = reg.cap(1);
+    QString wisperMesssage = reg.cap(2);
+    for(auto it = users_.begin(); it != users_.end();++it){
+        if(it.value() == userPseudo || it.key() == currentClient_){
+            QString res = QString(userPseudo + ":" + wisperMesssage + "\n");
+            qDebug() << res;
+            it.key()->write(res.toUtf8());
+        }
+    }
+}
+
+void JustTalkServer::readUserMessage(QRegExp reg, QString message)
+{
+    QString user = users_[currentClient_];
+    qDebug() << "User:" << user;
+    qDebug() << "Message : " << message;
+
+    foreach(QTcpSocket *otherClient, clients_)
+        otherClient->write(QString(user + ":" + message + "\n").toUtf8());
+}
+
 void JustTalkServer::readyRead()
 {
-    QTcpSocket *client = (QTcpSocket*)sender();
-    while(client->canReadLine())
+    currentClient_ = (QTcpSocket*)sender();
+    while(currentClient_->canReadLine())
     {
-        QString line = QString::fromUtf8(client->readLine()).trimmed();
+        QString line = QString::fromUtf8(currentClient_->readLine()).trimmed();
         qDebug() << "Read line:" << line;
-
-        QRegExp meRegex("^/me:(.*)$");
-
-        if(meRegex.indexIn(line) != -1)
-        {
-            QString user = meRegex.cap(1);
-            users_[client] = user;
-            refreshUserList();
-
-            foreach(QTcpSocket *client, clients_)
-                client->write(QString("Server:" + user + " has joined.\n").toUtf8());
-            sendUserList();
-        }
-        else if(users_.contains(client))
-        {
-            QString message = line;
-            QRegExp wisper("^@([^ ]+) (.*)");
-            if(wisper.indexIn(message) == 0){
-                QString userPseudo = wisper.cap(1);
-                QString wisperMesssage = wisper.cap(2);
-                for(auto it = users_.begin(); it != users_.end();++it){
-                    if(it.value() == userPseudo){
-                        QString res = QString(userPseudo + ":" + wisperMesssage + "\n");
-                        qDebug() << res;
-                        it.key()->write(res.toUtf8());
-                    }
-                }
-            }else{
-                QString user = users_[client];
-                qDebug() << "User:" << user;
-                qDebug() << "Message:" << message;
-
-                foreach(QTcpSocket *otherClient, clients_)
-                    otherClient->write(QString(user + ":" + message + "\n").toUtf8());
-            }
-        }
+        if(actions_.triggerActions(line,this))
+            qDebug() << "Action found";
         else
-        {
-            qWarning() << "Got bad message from client:" << client->peerAddress().toString() << line;
-        }
+            qWarning() << "Got bad message from client:" << currentClient_->peerAddress().toString() << line;
+
     }
 }
 

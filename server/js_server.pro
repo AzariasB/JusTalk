@@ -16,9 +16,11 @@ FORMS   += \
     server.ui
 
 HEADERS += \
-    justalkserver.h
+    justalkserver.h \
+    ../actionlist.h
 
 SOURCES += \
            main.cpp \
-    justalkserver.cpp
+    justalkserver.cpp \
+    ../actionlist.cpp
 

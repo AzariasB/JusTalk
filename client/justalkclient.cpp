@@ -11,6 +11,7 @@ JusTalkClient::JusTalkClient(QWidget *parent) :
     socket_ = new QTcpSocket(this);
 
     login();
+    createActions();
 
     roomTextEdit->setReadOnly(true);
 
@@ -35,7 +36,7 @@ void JusTalkClient::roomContextMenu(QPoint p)
 void JusTalkClient::wisperTo()
 {
     foreach (QListWidgetItem *item, userListWidget->selectedItems()) {
-        sayLineEdit->setText("@" + item->text());
+        sayLineEdit->setText("@" + item->text() + " ");
         sayLineEdit->setFocus();
     }
 }
@@ -66,6 +67,12 @@ void JusTalkClient::handlError(QAbstractSocket::SocketError er)
             break;
     }
     QMessageBox::warning(this,title,message);
+}
+
+void JusTalkClient::createActions()
+{
+    actions_.addAction("^/users:(.*)$","readUserList");
+    actions_.addAction("^([^:]+):(.*)$","readUserMessage");
 }
 
 void JusTalkClient::login(const QString &hostname)
@@ -99,36 +106,28 @@ void JusTalkClient::readyRead()
 {
     while(socket_->canReadLine())
     {
-        //
         QString line = QString::fromUtf8(socket_->readLine()).trimmed();
-
-        // These two regular expressions describe the kinds of messages
-        // the server can send us:
-
-        //  Normal messges look like this: "username:The message"
-        QRegExp messageRegex("^([^:]+):(.*)$");
-
-        // Any message that starts with "/users:" is the server sending us a
-        // list of users so we can show that list in our GUI:
-        QRegExp usersRegex("^/users:(.*)$");
-
-        if(usersRegex.indexIn(line) != -1)
-        {
-            // If so, udpate our users list on the right:
-            QStringList users = usersRegex.cap(1).split(",");
-            userListWidget->clear();
-            foreach(QString user, users)
-                new QListWidgetItem(user, userListWidget);
-        }
-        else if(messageRegex.indexIn(line) != -1)
-        {
-            QString user = messageRegex.cap(1);
-            QString message = messageRegex.cap(2);
-
-            user = user.replace(QRegExp(pseudo_),"me");
-            roomTextEdit->append("<b>" + user + "</b>: " + message);
-        }
+        actions_.triggerActions(line,this);
     }
+}
+
+
+void JusTalkClient::readUserList(QRegExp reg, QString userList)
+{
+    qDebug() << userList;
+    QStringList users = reg.cap(1).split(",");
+    userListWidget->clear();
+    foreach (QString user, users) {
+        new QListWidgetItem(user,userListWidget);
+    }
+}
+
+void JusTalkClient::readUserMessage(QRegExp reg, QString str)
+{
+    QString user = reg.cap(1);
+    QString message = reg.cap(2);
+    user = user.replace(pseudo_,"me");
+    roomTextEdit->append("<b>" + user + "</b>: " + message);
 }
 
 // This function gets called when our socket has successfully connected to the chat

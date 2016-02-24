@@ -10,7 +10,10 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMenu>
+#include <QAction>
 
+
+#include "../actionlist.h"
 #include "ui_justalkclient.h"
 
 /*
@@ -28,7 +31,6 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
         JusTalkClient(QWidget *parent=0);
 
     public slots:
-
         // Connect to the server
         void login(const QString &hostname = "localhost");
 
@@ -44,10 +46,17 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
 
         void roomContextMenu(QPoint p);
 
+        void readUserList(QRegExp reg,QString userList);
+
+        void readUserMessage(QRegExp reg, QString str);
+
     private slots:
         void wisperTo();
 
+        void createActions();
+
     private:
+        ActionList actions_;
 
         // This is the socket that will let us communitate with the server.
         QTcpSocket *socket_;

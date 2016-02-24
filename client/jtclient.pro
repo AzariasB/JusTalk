@@ -5,6 +5,9 @@ DEPENDPATH += .
 TARGET = client
 INCLUDEPATH += .
 
+CONFIG += c++11
+
+
 QT += designer uitools core gui network
 
 
@@ -14,9 +17,11 @@ FORMS   += \
     justalkclient.ui
 
 HEADERS += \ 
-    justalkclient.h
+    justalkclient.h \
+    ../actionlist.h
 
 SOURCES += \
            main.cpp \
-    justalkclient.cpp
+    justalkclient.cpp \
+    ../actionlist.cpp
 

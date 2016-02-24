@@ -9,6 +9,7 @@
 #include <QSet>
 #include <QListWidgetItem>
 
+#include "../actionlist.h"
 #include "ui_server.h"
 
 class JustTalkServer : public QMainWindow , public Ui::MainWindow
@@ -25,6 +26,13 @@ class JustTalkServer : public QMainWindow , public Ui::MainWindow
             delete server_;
         }
 
+    public slots:
+        void readUserPresentation(QRegExp reg,QString str);
+
+        void readUserWisper(QRegExp reg, QString);
+
+        void readUserMessage(QRegExp reg,QString);
+
     private slots:
         void readyRead();
         void disconnected();
@@ -32,8 +40,14 @@ class JustTalkServer : public QMainWindow , public Ui::MainWindow
         void incomingConnection();
         void refreshUserList();
 
-    private:        
+    private:
+        void addActions();
+
+        ActionList actions_;
+
         QTcpServer *server_;
+
+        QTcpSocket *currentClient_;
 
         QSet<QTcpSocket*> clients_;
         QMap<QTcpSocket*,QString> users_;
