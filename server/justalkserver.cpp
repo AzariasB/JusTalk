@@ -8,9 +8,37 @@ JustTalkServer::JustTalkServer(QObject *parent) :
 {
     setupUi(this);
     connect(server_,SIGNAL(newConnection()),this,SLOT(incomingConnection()));
+    connect(server_,SIGNAL(acceptError(QAbstractSocket::SocketError)),this,SLOT(handleError(QAbstractSocket::SocketError)));
     connect(quitButton,SIGNAL(clicked(bool)),this,SLOT(close()));
+    connect(actionQuit,SIGNAL(triggered(bool)),this,SLOT(close()));
     addActions();
 
+}
+
+void JustTalkServer::handleError(QAbstractSocket::SocketError er)
+{
+    QString title = "Connection error";
+    QString message = "An error occured";
+    switch (er) {
+        case QAbstractSocket::ConnectionRefusedError:
+            title = "Connection refused";
+            message = "The connection to the server was refused.";
+            break;
+    case QAbstractSocket::RemoteHostClosedError:
+            title = "Remote host closed";
+            message = "The remote host was closed";
+            break;
+    case QAbstractSocket::HostNotFoundError:
+            title = "Host not found";
+            message ="The host you trying to access does not exist or is unreachable";
+            break;
+    case QAbstractSocket::SocketTimeoutError:
+            title = "Timeout";
+            message = "The request is taking too long.";
+        default:
+            break;
+    }
+    QMessageBox::warning(this,title,message);
 }
 
 void JustTalkServer::addActions()

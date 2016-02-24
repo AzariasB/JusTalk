@@ -44,7 +44,6 @@ void JusTalkClient::wisperTo()
 
 void JusTalkClient::handlError(QAbstractSocket::SocketError er)
 {
-    qDebug() << er;
     QString title = "Connection error";
     QString message = "An error occured";
     switch (er) {

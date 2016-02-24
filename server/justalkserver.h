@@ -8,6 +8,7 @@
 #include <QMap>
 #include <QSet>
 #include <QListWidgetItem>
+#include <QMessageBox>
 
 #include "../actionlist.h"
 #include "ui_server.h"
@@ -39,9 +40,11 @@ class JustTalkServer : public QMainWindow , public Ui::MainWindow
         void sendUserList();
         void incomingConnection();
         void refreshUserList();
+        void handleError(QAbstractSocket::SocketError er);
 
     private:
         void addActions();
+
 
         ActionList actions_;
 
