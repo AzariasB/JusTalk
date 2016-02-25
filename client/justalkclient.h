@@ -53,6 +53,10 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
     private slots:
         void wisperTo();
 
+        void addToBlackList();
+
+        void removeFromBlacklist();
+
         void createActions();
 
     private:
@@ -62,6 +66,8 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
         QTcpSocket *socket_;
 
         QString pseudo_;
+
+        QStringList blackListed_;
 };
 
 #endif

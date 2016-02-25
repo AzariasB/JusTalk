@@ -15,6 +15,8 @@ JusTalkClient::JusTalkClient(QWidget *parent) :
 
     roomTextEdit->setReadOnly(true);
 
+    userListWidget->setSelectionBehavior(QAbstractItemView::SelectItems);
+
     connect(socket_, SIGNAL(readyRead()), this, SLOT(readyRead()));
     connect(socket_, SIGNAL(connected()), this, SLOT(connected()));
     connect(socket_, SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(handlError(QAbstractSocket::SocketError)));
@@ -29,8 +31,30 @@ void JusTalkClient::roomContextMenu(QPoint p)
 
     QMenu ctxMenu;
     ctxMenu.addAction("Wisper",this,SLOT(wisperTo()));
-
+    foreach (QListWidgetItem *itm, userListWidget->selectedItems()) {
+        if(blackListed_.contains(itm->text())){
+            ctxMenu.addAction("Remove from blacklist",this,SLOT(removeFromBlacklist()));
+        }else{
+            ctxMenu.addAction("Add to blacklist",this,SLOT(addToBlackList()));
+        }
+    }
     ctxMenu.exec(globalPos);
+}
+
+void JusTalkClient::addToBlackList()
+{
+    foreach (QListWidgetItem *item, userListWidget->selectedItems()) {
+        if(!blackListed_.contains(item->text()))
+            blackListed_ << item->text();
+    }
+}
+
+void JusTalkClient::removeFromBlacklist()
+{
+    foreach (QListWidgetItem *item, userListWidget->selectedItems()) {
+        if(blackListed_.contains(item->text()))
+            blackListed_.removeAll(item->text());
+    }
 }
 
 void JusTalkClient::wisperTo()
@@ -113,7 +137,6 @@ void JusTalkClient::readyRead()
 
 void JusTalkClient::readUserList(QRegExp reg, QString userList)
 {
-    qDebug() << userList;
     QStringList users = reg.cap(1).split(",");
     userListWidget->clear();
     foreach (QString user, users) {
@@ -124,9 +147,11 @@ void JusTalkClient::readUserList(QRegExp reg, QString userList)
 void JusTalkClient::readUserMessage(QRegExp reg, QString str)
 {
     QString user = reg.cap(1);
-    QString message = reg.cap(2);
-    user = user.replace(pseudo_,"me");
-    roomTextEdit->append("<b>" + user + "</b>: " + message);
+    if(!blackListed_.contains(user)){
+        QString message = reg.cap(2);
+        user = user.replace(pseudo_,"me");
+        roomTextEdit->append("<b>" + user + "</b>: " + message);
+    }
 }
 
 // This function gets called when our socket has successfully connected to the chat
