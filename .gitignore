@@ -11,3 +11,8 @@ build/
 
 #qtcreator files
 *.pro.user
+
+#latex compilation files
+/doc/*
+!/doc/doc.pdf
+!/doc/doc.tex

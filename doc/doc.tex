@@ -1,0 +1,206 @@
+\documentclass[12pt]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}%english gestion
+\usepackage[bottom]{footmisc}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage[newparttoc]{titlesec}
+\usepackage[export]{adjustbox}
+\usepackage[margin=0.95in]{geometry}
+\usepackage{hyperref}
+
+
+%All the packages
+\usepackage{lmodern,url,ragged2e,textcomp,lmodern}
+\usepackage{graphicx,xcolor,float,afterpage}
+\usepackage{chngcntr,csquotes,helvet,lastpage}
+\usepackage{subcaption,wrapfig,fancyhdr,blindtext}
+\usepackage{titletoc,transparent}
+
+
+%Nouvelles commandes
+\renewcommand{\familydefault}{\sfdefault} %default font
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\newcommand{\Mline}{\hrule \mbox{}\\[0.1cm]}
+\renewcommand{\thechapter}{\Roman{chapter}}
+
+%final last page
+\newcommand\blankpage{%
+    \null
+    \thispagestyle{empty}%
+    \addtocounter{page}{-1}%
+    \newpage}
+
+
+%FORMAT DU CHAPITRE
+\titleclass{\chapter}{top}
+\titleformat{\chapter}[hang]
+  {}
+  {\normalfont \sffamily \bfseries \thechapter. \hspace{0.1cm} }
+  {0pt}
+  {\normalfont \sffamily \bfseries }
+\titlespacing*{\chapter}{0pt}{0pt}{18pt}
+
+%FORMAT De section
+\renewcommand*\thesection{\arabic{section}}
+\titleclass{\section}{straight}
+\titleformat{\section}[hang]
+  {}
+  {\normalfont \sffamily \hspace{1cm} \bfseries \thesection . }
+  {0pt}
+  {\normalfont \sffamily \bfseries }
+  
+\titlespacing*{\chapter}{0pt}{50pt}{18pt}
+
+%Comptage des figures
+\renewcommand{\thefigure}{\arabic{figure}}
+
+%Ne pas reset le numéro des figures  à chaque chapitre
+\counterwithout{figure}{chapter}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+
+
+% Title
+\Mline
+{ \LARGE JusTalk \\[0.4cm] }
+\Mline
+% Author and supervisor
+
+\textsf{A Qt's messaging application}\\[3cm]
+
+\textsf{Boutin Azarias B00092351\\[2cm]
+	BN013 BSC in Computing}
+
+\end{center}
+\end{titlepage}
+
+\setcounter{page}{2}
+
+\tableofcontents
+
+
+\chapter{Introduction}
+The aim of this project is to create a messaging application. Using sockets. We learned how to use the sockets with java, and the java.net.Socket package. But to learn how to use another language and another framework, to have better performances, and a more maintainable code, I chose to use C++ with the Qt framework.
+
+\section{The Qt framework}
+I chose Qt for two main reasons : 
+\begin{enumerate}
+	\item It is widely used by companies everywhere around the world. Thanks to its history, it is very easy to use and the community it very large.
+	\item The languages used by Qt is C++. It is one of the most complex object-oriented programming language. By knowing how to smartly use it, I will know how to use others object-oriented language.
+\end{enumerate}
+
+Four tools are necessary to run this project :
+\begin{itemize}
+	\item A working personal computer
+	\item A C++ compiler (g++)
+	\item The QtCreator IDE to create the Qt application.
+\end{itemize}
+
+\section{Installing and running}
+To be able to run the project. You must first clone the github repository at this address : \url{https://github.com/AzariasB/JusTalk}.
+As said above, you will need QtCreator IDE. (Or at least qmake). Qmake will generate the makefile from the .pro files.\\
+The folder contains two "Qt projects". There is the client project and the server project. Both of them must be opened with qtcreator.
+Once this is done, one can first start the server. Then start as many clients as one wants.
+ 
+\chapter{Implementation}
+\section{Server}
+The server implementation contains one class and requires a common file : ActionList (See below for more informations). 
+A server object contains
+\begin{itemize}
+	\item a TcpServer. Used to listen any incoming connections.
+	\item a Set of TcpSockets. All the connected clients
+	\item a map of QString for each TcpSockets. It is used to know what sockets correspond to what pseudonym. 
+\end{itemize}
+The server waits for any incoming connection. And listen for any user's messages.\\
+When one new connection is detected, the socket is added to the set, and the user must send a presentation message to be fully detected by the server as part of the chat room.\\
+When a user is sending a message, this one is tested with regular expressions, and a function is called when the regex matches.
+The possible messages are :
+\begin{itemize}
+	\item /me:pseudo : a user's presentation. The user's pseudo is added to the map. (If it's not already in)
+	\item @pseudo:message : a user whispers to another.
+	\item message : a single-line message. To send to all the users.
+\end{itemize}
+The client's GUI is really simple. It displays a list of the connected users. The server can be closed by closing the window, or by clicking the 'quit' button.
+
+\section{Client}
+The client implementation contains one class and requires a common class: ActionList (See below for more informations). 
+A client object contains :
+\begin{itemize}
+	\item a TcpSocket. The socket used to communicate with the server.
+	\item a String, for the pseudo.
+	\item a StringList, for all the blacklisted users.
+\end{itemize}
+Once started, the client will try to connect to the server (with its socket). And once the connection will be done, it will send its pseudo to the server to give to the chat room the pseudo of the user.\\
+Once this is done, the client just waits for any incoming messages from the server.\\
+When the user send a message, the message is simply written in the socket.
+When the socket is receiving some data, the data is processed, and depending on the form of the message, differents actions will be executed.
+Here are the differents forms message a user can receive :
+\begin{itemize}
+	\item /users:user1,user2,user3: a list of the connected users.
+	\item pseudo:message : a message from the user with pseudonym : pseudo.
+\end{itemize}
+The client's GUI is composed of three main parts.
+\begin{itemize}
+	\item The chat room. Where all the messages are displayed. Event those from the user himself. (These messages begin with 'me:')
+	\item The chat bar : where the user can write down a message and send it to everyone. To send the message, the user can press enter or click the 'Talk!' button.
+	\item The user's list : A list of all the connected users. The user can right click on one of these users to either whisper to them or add them to their own blacklist.
+\end{itemize}
+
+
+\section{Common parts}
+ActionList is a common part of the server and the client. Since the two of them have differents functions depending on the message there are receiving.\\
+The action list is a simple key - value hash. Where the key is the regular expression to match, and the value is the name of the function to call if the regular expression matches.\\
+This class contains two simple functions :
+\begin{itemize}
+	\item addAction : register the function name and the regular expression to match.
+	\item triggerAction : see if the string given in parameter matches any regex, and if so, call the function with the given context.
+\end{itemize}
+This function makes uses of the really powerful signal-slot system provided by Qt. In Java, it's a bit like the actionListener, but in more concise, and more general. It works not only for GUI, but for any class. It is also possible to create custom signals and slots.
+
+\chapter{Design}
+The communication protocol used for this application is TCP. Thanks to its error-robustness, the user is able to know exactly what error is happening. The speed of communication is important, but not as important as in video games where the response time really matters. In the case of a chat application, the difference between UDP and TCP is almost imperceptible for the users.\\
+This application is efficient for two main reasons :
+\begin{itemize}
+	\item It's developed in C++, therefore it entirely compiled and fast to process
+	\item There are not any big loop (except the main loop for the GUI) and expensive calculations.
+\end{itemize}
+Thanks to the signal-slot system of Qt, there is no blocking, and every action triggered gets quickly completed. Therefore the GUI is fluid and is reacting really fast to the user's operations. Here are some screenshots to show how the application looks like.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.9\textwidth]{threeClients.png}
+	\caption{Three clients talking to each others}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{minipage}{.5\textwidth}
+  \centering
+  \includegraphics[width=.7\linewidth]{Server.png}
+  \captionof{figure}{The client's list of users}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+  \centering
+  \includegraphics[width=.7\linewidth]{oneClient.png}
+  \captionof{figure}{One client is warned when one leaves}
+  \label{fig:test2}
+\end{minipage}
+\end{figure}
+
+
+
+\chapter{Conclusion}
+To put it in a nutshell : this project is developed in C++ with Qt framework for the GUI.
+The protocol used for this messaging application is TCP/IP. To run the application, one server must be run, and several clients can connect to this server and then chat with each others.
+The application's "cool features". Are : 
+\begin{itemize}
+	\item The possibility for a user to whisper to another
+	\item The possibility for a user to create a blacklist and block messages from other users.
+\end{itemize}
+
+
+
+\end{document}
