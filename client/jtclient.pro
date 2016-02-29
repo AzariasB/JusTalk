@@ -11,7 +11,8 @@ CONFIG += c++11
 QT += designer uitools core gui network
 
 
-RESOURCES +=
+RESOURCES += \
+    icons.qrc
 
 FORMS   += \ 
     justalkclient.ui

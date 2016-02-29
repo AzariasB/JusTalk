@@ -44,9 +44,10 @@ void JusTalkClient::roomContextMenu(QPoint p)
 void JusTalkClient::addToBlackList()
 {
     foreach (QListWidgetItem *item, userListWidget->selectedItems()) {
-        if(!blackListed_.contains(item->text()))
+        if(item->text() != pseudo_ && !blackListed_.contains(item->text()))
             blackListed_ << item->text();
     }
+    updateUserDisplay();
 }
 
 void JusTalkClient::removeFromBlacklist()
@@ -55,10 +56,23 @@ void JusTalkClient::removeFromBlacklist()
         if(blackListed_.contains(item->text()))
             blackListed_.removeAll(item->text());
     }
+    updateUserDisplay();
+}
+
+void JusTalkClient::updateUserDisplay()
+{
+    for(int i = 0 ; i< userListWidget->count();i++) {
+        QListWidgetItem *item = userListWidget->item(i);
+        if(blackListed_.contains(item->text()))
+            item->setIcon(QIcon(":/icons/blocked.png"));
+        else
+            item->setIcon(QIcon());
+    }
 }
 
 void JusTalkClient::wisperTo()
 {
+    //Edit the lineEdit
     foreach (QListWidgetItem *item, userListWidget->selectedItems()) {
         sayLineEdit->setText("@" + item->text() + " ");
         sayLineEdit->setFocus();
@@ -94,7 +108,9 @@ void JusTalkClient::handlError(QAbstractSocket::SocketError er)
 
 void JusTalkClient::createActions()
 {
+    //The userlist : /users:a,b,cd...
     actions_.addAction("^/users:(.*)$","readUserList");
+    //A message : 'someone:message'
     actions_.addAction("^([^:]+):(.*)$","readUserMessage");
 }
 
@@ -127,24 +143,30 @@ void JusTalkClient::talkClicked()
 // This function gets called whenever the chat server has sent us some text:
 void JusTalkClient::readyRead()
 {
+    //For each line received
     while(socket_->canReadLine())
     {
+        //Get the line
         QString line = QString::fromUtf8(socket_->readLine()).trimmed();
+        //Trigger the action if the regex matches
         actions_.triggerActions(line,this);
     }
 }
 
 
-void JusTalkClient::readUserList(QRegExp reg, QString userList)
+void JusTalkClient::readUserList(QRegExp reg, QString)
 {
+    //User list is the first group of the regex, separated by a ','.
     QStringList users = reg.cap(1).split(",");
     userListWidget->clear();
     foreach (QString user, users) {
-        new QListWidgetItem(user,userListWidget);
+        QListWidgetItem *item = new QListWidgetItem(user,userListWidget);
+        if(user == pseudo_)
+            item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
     }
 }
 
-void JusTalkClient::readUserMessage(QRegExp reg, QString str)
+void JusTalkClient::readUserMessage(QRegExp reg, QString)
 {
     QString user = reg.cap(1);
     if(!blackListed_.contains(user)){

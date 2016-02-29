@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>blocked.png</file>
+    </qresource>
+</RCC>

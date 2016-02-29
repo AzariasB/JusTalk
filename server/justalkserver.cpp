@@ -1,7 +1,5 @@
 #include "justalkserver.h"
 
-#include <QRegExp>
-
 JustTalkServer::JustTalkServer(QObject *parent) :
     QMainWindow(),
     server_(new QTcpServer(parent))
@@ -43,8 +41,13 @@ void JustTalkServer::handleError(QAbstractSocket::SocketError er)
 
 void JustTalkServer::addActions()
 {
+    //User presentation : '/me:pseudo'
     actions_.addAction("^/me:(.*)$","readUserPresentation");
+
+    //User wispering to another : '@pseudo:message'
     actions_.addAction("^@([^ ]+) (.*)","readUserWisper");
+
+    //Normal message : 'message'
     actions_.addAction("^(.*)$","readUserMessage");
 }
 
@@ -55,11 +58,15 @@ bool JustTalkServer::listen(QHostAddress::SpecialAddress host, int port)
 
 void JustTalkServer::incomingConnection()
 {
+    //Get the connection
     QTcpSocket *client = server_->nextPendingConnection();
+
+    //Insert into the set
     clients_.insert(client);
 
     qDebug() << "New client from:" << client->peerAddress().toString();
 
+    //Connect client's slots to detect when ready to read, when disconnect.
     connect(client, SIGNAL(readyRead()), this, SLOT(readyRead()));
     connect(client, SIGNAL(disconnected()), this, SLOT(disconnected()));
     connect(client,SIGNAL(disconnected()),this,SLOT(refreshUserList()));
@@ -68,13 +75,15 @@ void JustTalkServer::incomingConnection()
 void JustTalkServer::refreshUserList()
 {
     userListWidget->clear();
+    //Update user list
     foreach (QString user, users_.values()) {
         new QListWidgetItem(user,userListWidget);
     }
 }
 
-void JustTalkServer::readUserPresentation(QRegExp reg, QString str)
+void JustTalkServer::readUserPresentation(QRegExp reg, QString)
 {
+    //User pseudo is first group of the regex
     QString user = reg.cap(1);
     if(!users_.contains(currentClient_)){
         users_[currentClient_] = user;
@@ -88,7 +97,10 @@ void JustTalkServer::readUserPresentation(QRegExp reg, QString str)
 
 void JustTalkServer::readUserWisper(QRegExp reg, QString)
 {
+    //Destination pseudo is the first group
     QString userPseudo = reg.cap(1);
+
+    //Message is second group
     QString wisperMesssage = reg.cap(2);
     for(auto it = users_.begin(); it != users_.end();++it){
         if(it.value() == userPseudo || it.key() == currentClient_){
@@ -99,22 +111,24 @@ void JustTalkServer::readUserWisper(QRegExp reg, QString)
     }
 }
 
-void JustTalkServer::readUserMessage(QRegExp reg, QString message)
+void JustTalkServer::readUserMessage(QRegExp, QString message)
 {
     QString user = users_[currentClient_];
     qDebug() << "User:" << user;
     qDebug() << "Message : " << message;
-
+    //Write the message to each connected client
     foreach(QTcpSocket *otherClient, clients_)
         otherClient->write(QString(user + ":" + message + "\n").toUtf8());
 }
 
 void JustTalkServer::readyRead()
 {
+    //Read message from client
     currentClient_ = (QTcpSocket*)sender();
     while(currentClient_->canReadLine())
     {
         QString line = QString::fromUtf8(currentClient_->readLine()).trimmed();
+        //Trigger the action
         qDebug() << "Read line:" << line;
         if(actions_.triggerActions(line,this))
             qDebug() << "Action found";
@@ -126,14 +140,18 @@ void JustTalkServer::readyRead()
 
 void JustTalkServer::disconnected()
 {
+    //Get the sender of the signal
     QTcpSocket *client = (QTcpSocket*)sender();
     qDebug() << "Client disconnected:" << client->peerAddress().toString();
 
+    //Remove from the set
     clients_.remove(client);
 
     QString user = users_[client];
+    //and from the map
     users_.remove(client);
 
+    //Refresh the client's user list
     sendUserList();
     foreach(QTcpSocket *client, clients_)
         client->write(QString("Server:" + user + " has left.\n").toUtf8());
@@ -145,6 +163,8 @@ void JustTalkServer::sendUserList()
     foreach(QString user, users_.values())
         userList << user;
 
+    //For each client, send the list of user joined with a ','
+    QString message = QString("/users:" + userList.join(",") + "\n");
     foreach(QTcpSocket *client, clients_)
-        client->write(QString("/users:" + userList.join(",") + "\n").toUtf8());
+        client->write(message.toUtf8());
 }

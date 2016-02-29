@@ -34,8 +34,10 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
         // Connect to the server
         void login(const QString &hostname = "localhost");
 
+        //The 'talk' button is clicked, or the user pressed enter
         void talkClicked();
 
+        //A message was received
         void readyRead();
 
         // When the socket tells us it's connected.
@@ -44,20 +46,67 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
         //Handle any socket errors
         void handlError(QAbstractSocket::SocketError er);
 
+        /**
+         * @brief roomContextMenu show the contextMenu in the userList
+         * @param p the position of the right-click
+         *
+         * Get the selected user and display a menu
+         * where the user right clicked
+         */
         void roomContextMenu(QPoint p);
 
-        void readUserList(QRegExp reg,QString userList);
+        /**
+         * @brief readUserList
+         * @param reg the regex used to detect tha is was a userList
+         *
+         * Called when the server send the userlist to the client
+         */
+        void readUserList(QRegExp reg,QString);
 
-        void readUserMessage(QRegExp reg, QString str);
+        /**
+         * @brief readUserMessage
+         * @param reg the regex used to detect that the server send a message
+         *
+         * Called when the server send a message (from another user or from itself)
+         */
+        void readUserMessage(QRegExp reg, QString);
 
     private slots:
+        /**
+         * This function is called whenever a user right click on a user
+         * (on the user list) and select 'wisper'.
+         * It will add the '@PSEUDO' in the user's chat bar
+         * @brief wisperTo wisper to a single user
+         */
         void wisperTo();
 
+        /**
+         * This function is called when the user click on a user
+         * (on the user list) and select 'add to the blacklist'
+         *
+         * @brief addToBlackList add a user to the blacklist
+         */
         void addToBlackList();
 
+        /**
+         * @brief removeFromBlacklist remove a user from the blacklist
+         *
+         * Called whenever a user is already in the blaclist and the user
+         * right click on the user list and select 'remove from black list'
+         *
+         */
         void removeFromBlacklist();
 
+        /**
+         * @brief createActions create all the key-value actions
+         * to processes every received message
+         */
         void createActions();
+
+        /**
+         * @brief updateUserDisplay update the list of users
+         */
+        void updateUserDisplay();
 
     private:
         ActionList actions_;
