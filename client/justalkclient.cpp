@@ -104,14 +104,27 @@ void JusTalkClient::handlError(QAbstractSocket::SocketError er)
             break;
     }
     QMessageBox::warning(this,title,message);
+    //Read last messages
+    readyRead();
 }
 
 void JusTalkClient::createActions()
 {
     //The userlist : /users:a,b,cd...
     actions_.addAction("^/users:(.*)$","readUserList");
+
+    //When kicked from the server: kicked:reason
+    actions_.addAction("^/kicked:(.*)$","readKicked");
+
     //A message : 'someone:message'
     actions_.addAction("^([^:]+):(.*)$","readUserMessage");
+}
+
+void JusTalkClient::readKicked(QRegExp reg, QString)
+{
+    QString reason = reg.cap(1);
+    roomTextEdit->append("<b>You have been kicked, reason :</b>: " + reason);
+    userListWidget->clear();
 }
 
 void JusTalkClient::login(const QString &hostname)
@@ -148,6 +161,9 @@ void JusTalkClient::readyRead()
     {
         //Get the line
         QString line = QString::fromUtf8(socket_->readLine()).trimmed();
+#if DEBUG
+        qDebug() << "Received " << line;
+#endif
         //Trigger the action if the regex matches
         actions_.triggerActions(line,this);
     }

@@ -9,6 +9,7 @@
 #include <QSet>
 #include <QListWidgetItem>
 #include <QMessageBox>
+#include <QInputDialog>
 #include <QRegExp>
 
 #include "../actionlist.h"
@@ -73,6 +74,21 @@ class JustTalkServer : public QMainWindow , public Ui::MainWindow
          * This will add the user to the connecte users's list
          */
         void incomingConnection();
+
+
+        /**
+         * @brief roomContextMenu show the contextMenu in the userList
+         * @param p the position of the right-click
+         *
+         * Get the selected user and display a menu
+         * where the user right clicked
+         */
+        void customContextMenu(QPoint p);
+
+        /**
+         * @brief kickUser kick the selected user
+         */
+        void kickUser();
 
         //Update the user list UI
         void refreshUserList();

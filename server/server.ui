@@ -18,7 +18,11 @@
     <item row="1" column="0">
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QListWidget" name="userListWidget"/>
+       <widget class="QListWidget" name="userListWidget">
+        <property name="contextMenuPolicy">
+         <enum>Qt::CustomContextMenu</enum>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="quitButton">

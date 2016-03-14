@@ -9,8 +9,29 @@ JustTalkServer::JustTalkServer(QObject *parent) :
     connect(server_,SIGNAL(acceptError(QAbstractSocket::SocketError)),this,SLOT(handleError(QAbstractSocket::SocketError)));
     connect(quitButton,SIGNAL(clicked(bool)),this,SLOT(close()));
     connect(actionQuit,SIGNAL(triggered(bool)),this,SLOT(close()));
+    connect(userListWidget,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(customContextMenu(QPoint)));
     addActions();
 
+}
+
+void JustTalkServer::kickUser()
+{
+    QListWidgetItem* selected = userListWidget->selectedItems()[0];
+    QString pseudo = selected->text();
+    QTcpSocket *userSocket = users_.key(pseudo);
+    QString reason = QInputDialog::getText(this,"Reason","Kick reason");
+    QString message = QString("/kicked:"+reason + "\n");
+    userSocket->write(QString(message).toUtf8());
+    userSocket->disconnectFromHost();
+    users_.remove(userSocket);
+}
+
+void JustTalkServer::customContextMenu(QPoint p)
+{
+    QPoint globalPos = userListWidget->mapToGlobal(p);
+    QMenu ctxMenu;
+    ctxMenu.addAction("Kick",this,SLOT(kickUser()));
+    ctxMenu.exec(globalPos);
 }
 
 void JustTalkServer::handleError(QAbstractSocket::SocketError er)
@@ -98,14 +119,17 @@ void JustTalkServer::readUserPresentation(QRegExp reg, QString)
 void JustTalkServer::readUserWisper(QRegExp reg, QString)
 {
     //Destination pseudo is the first group
-    QString userPseudo = reg.cap(1);
+    QString receiver = reg.cap(1);
+    QString sender = users_[currentClient_];
 
     //Message is second group
     QString wisperMesssage = reg.cap(2);
+
+
     for(auto it = users_.begin(); it != users_.end();++it){
-        if(it.value() == userPseudo || it.key() == currentClient_){
-            QString res = QString(userPseudo + ":" + wisperMesssage + "\n");
-            qDebug() << res;
+        //Send the message to the receiver and the sender
+        if(it.value() == receiver || it.key() == currentClient_){
+            QString res = QString(sender + ":" + wisperMesssage + "\n");
             it.key()->write(res.toUtf8());
         }
     }

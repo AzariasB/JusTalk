@@ -71,6 +71,8 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
          */
         void readUserMessage(QRegExp reg, QString);
 
+        void readKicked(QRegExp reg,QString);
+
     private slots:
         /**
          * This function is called whenever a user right click on a user
