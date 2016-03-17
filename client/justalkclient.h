@@ -2,7 +2,7 @@
 #ifndef JUSTALK_CLIENT
 #define JUSTALK_CLIENT
 
-#define DEBUG 1
+#define DEBUG 0
 
 #include <QMainWindow>
 #include <QTcpSocket>
@@ -11,10 +11,12 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QAction>
+#include <QApplication>
 
 
 #include "../actionlist.h"
 #include "ui_justalkclient.h"
+#include "infodialog.h"
 
 /*
  * This is the MainWindow class that we have told to inherit from
@@ -32,7 +34,7 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
 
     public slots:
         // Connect to the server
-        void login(const QString &hostname = "localhost");
+        void login();
 
         //The 'talk' button is clicked, or the user pressed enter
         void talkClicked();

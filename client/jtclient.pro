@@ -19,10 +19,12 @@ FORMS   += \
 
 HEADERS += \ 
     justalkclient.h \
-    ../actionlist.h
+    ../actionlist.h \
+    infodialog.h
 
 SOURCES += \
            main.cpp \
     justalkclient.cpp \
-    ../actionlist.cpp
+    ../actionlist.cpp \
+    infodialog.cpp
 

@@ -11,19 +11,22 @@ JusTalkClient::JusTalkClient(QWidget *parent) :
     socket_ = new QTcpSocket(this);
 
     login();
-    createActions();
 
-    roomTextEdit->setReadOnly(true);
+    if(!pseudo_.isEmpty()){
+        createActions();
 
-    userListWidget->setSelectionBehavior(QAbstractItemView::SelectItems);
+        roomTextEdit->setReadOnly(true);
 
-    connect(socket_, SIGNAL(readyRead()), this, SLOT(readyRead()));
-    connect(socket_, SIGNAL(connected()), this, SLOT(connected()));
-    connect(socket_, SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(handlError(QAbstractSocket::SocketError)));
-    connect(userListWidget,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(roomContextMenu(QPoint)));
-    connect(talkButton,SIGNAL(clicked()), this, SLOT(talkClicked()));
-    connect(sayLineEdit,SIGNAL(returnPressed()),this,SLOT(talkClicked()));
-    connect(sayLineEdit,SIGNAL(textEdited(QString)),this,SLOT(answerWhisper(QString)));
+        userListWidget->setSelectionBehavior(QAbstractItemView::SelectItems);
+
+        connect(socket_, SIGNAL(readyRead()), this, SLOT(readyRead()));
+        connect(socket_, SIGNAL(connected()), this, SLOT(connected()));
+        connect(socket_, SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(handlError(QAbstractSocket::SocketError)));
+        connect(userListWidget,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(roomContextMenu(QPoint)));
+        connect(talkButton,SIGNAL(clicked()), this, SLOT(talkClicked()));
+        connect(sayLineEdit,SIGNAL(returnPressed()),this,SLOT(talkClicked()));
+        connect(sayLineEdit,SIGNAL(textEdited(QString)),this,SLOT(answerWhisper(QString)));
+    }
 }
 
 void JusTalkClient::roomContextMenu(QPoint p)
@@ -159,10 +162,25 @@ void JusTalkClient::readKicked(QRegExp reg, QString)
     userListWidget->clear();
 }
 
-void JusTalkClient::login(const QString &hostname)
+void JusTalkClient::login()
 {
-
-    socket_->connectToHost(hostname, 4200);
+    QString hostname;
+    int port;
+    #if DEBUG
+        pseudo_ = QString::number(rand());
+        hostname = "localhost";
+        port = 4200;
+    #else
+        InfoDialog connectionInfos(this);
+        QMap<QString,QString> infos = connectionInfos.getInfos();
+        connectionInfos.close();
+        if(infos.isEmpty())
+            return;
+        pseudo_ = infos["pseudo"];
+        hostname = infos["address"];
+        port = infos["port"].toInt();
+    #endif
+    socket_->connectToHost(hostname, port);
 }
 
 // This gets called when the user clicks the sayButton (next to where
@@ -228,12 +246,9 @@ void JusTalkClient::readUserMessage(QRegExp reg, QString)
 // server.
 void JusTalkClient::connected()
 {
-#if DEBUG
-    pseudo_ = QString::number(rand());
-#else
-    pseudo_ = QInputDialog::getText(this,"Pseudo","Choose your pseudo");
-#endif
     // Send our username to the chat server.
-    socket_->write(QString("/me:" + pseudo_ + "\n").toUtf8());
-    sayLineEdit->setFocus();
+    if(socket_->isOpen() ){
+        socket_->write(QString("/me:" + pseudo_ + "\n").toUtf8());
+        sayLineEdit->setFocus();
+    }
 }
