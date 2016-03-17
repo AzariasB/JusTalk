@@ -23,6 +23,7 @@ JusTalkClient::JusTalkClient(QWidget *parent) :
     connect(userListWidget,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(roomContextMenu(QPoint)));
     connect(talkButton,SIGNAL(clicked()), this, SLOT(talkClicked()));
     connect(sayLineEdit,SIGNAL(returnPressed()),this,SLOT(talkClicked()));
+    connect(sayLineEdit,SIGNAL(textEdited(QString)),this,SLOT(answerWhisper(QString)));
 }
 
 void JusTalkClient::roomContextMenu(QPoint p)
@@ -39,6 +40,14 @@ void JusTalkClient::roomContextMenu(QPoint p)
         }
     }
     ctxMenu.exec(globalPos);
+}
+
+void JusTalkClient::answerWhisper(QString text)
+{
+    if(text == "/r " &&  !lastWhisper_.isEmpty() ){
+        sayLineEdit->setText("@"+lastWhisper_+" ");
+        sayLineEdit->setFocus();
+    }
 }
 
 void JusTalkClient::addToBlackList()
@@ -116,8 +125,31 @@ void JusTalkClient::createActions()
     //When kicked from the server: kicked:reason
     actions_.addAction("^/kicked:(.*)$","readKicked");
 
+    //Receiving a whisper : whisper:from>to:message
+    actions_.addAction("^/whisper:([^>]+)>([^:]+):(.*)","readWhisper");
+
     //A message : 'someone:message'
     actions_.addAction("^([^:]+):(.*)$","readUserMessage");
+}
+
+void JusTalkClient::readWhisper(QRegExp reg, QString)
+{
+    QString from = reg.cap(1);
+    QString to   = reg.cap(2);
+    QString msg  = reg.cap(3);
+
+    QString title;
+    if(from == pseudo_){
+        lastWhisper_ = to;
+        title = "<b>[me->" + to + "]</b>";
+    }else if(to == pseudo_){
+        lastWhisper_ = from;
+        title = "<b>[" + from +"->you] </b>";
+    }else{
+        lastWhisper_ = "";
+        title = QString("<b>[%1->%2]</b>").arg(from).arg(to);
+    }
+    roomTextEdit->append(title + ":" + msg);
 }
 
 void JusTalkClient::readKicked(QRegExp reg, QString)

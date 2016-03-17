@@ -71,7 +71,17 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
          */
         void readUserMessage(QRegExp reg, QString);
 
+        /**
+         * @brief readKicked read the kicked message
+         * @param reg the regex to know what was the reason of the kick
+         */
         void readKicked(QRegExp reg,QString);
+
+        /**
+         * @brief readWhisper
+         * @param reg the regex to know who's the sender, who's the receiver
+         */
+        void readWhisper(QRegExp reg,QString);
 
     private slots:
         /**
@@ -110,6 +120,11 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
          */
         void updateUserDisplay();
 
+        /**
+         * @brief answerWhisper whenever a client type '/r' in his line edit
+         */
+        void answerWhisper(QString text);
+
     private:
         ActionList actions_;
 
@@ -117,6 +132,8 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
         QTcpSocket *socket_;
 
         QString pseudo_;
+
+        QString lastWhisper_;
 
         QStringList blackListed_;
 };

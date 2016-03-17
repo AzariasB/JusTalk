@@ -122,17 +122,18 @@ void JustTalkServer::readUserWisper(QRegExp reg, QString)
     QString receiver = reg.cap(1);
     QString sender = users_[currentClient_];
 
+
     //Message is second group
-    QString wisperMesssage = reg.cap(2);
+    QString whisperMesssage = reg.cap(2);
+    QTcpSocket *destSocket = users_.key(receiver);
 
+    QString toSend = QString("/whisper:%1>%2:%3\n")
+            .arg(sender)
+            .arg(receiver)
+            .arg(whisperMesssage);
 
-    for(auto it = users_.begin(); it != users_.end();++it){
-        //Send the message to the receiver and the sender
-        if(it.value() == receiver || it.key() == currentClient_){
-            QString res = QString(sender + ":" + wisperMesssage + "\n");
-            it.key()->write(res.toUtf8());
-        }
-    }
+    destSocket->write(toSend.toUtf8());
+    currentClient_->write(toSend.toUtf8());
 }
 
 void JustTalkServer::readUserMessage(QRegExp, QString message)
