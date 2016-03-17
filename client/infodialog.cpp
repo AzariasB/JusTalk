@@ -38,13 +38,18 @@ void InfoDialog::checkFields()
     QString adress = infos_["Address"]->text();
     QString pseudo = infos_["Pseudo"]->text();
 
-    if(pseudo.isEmpty() ||
+    if(!pseudoIsValid(pseudo) ||
             port.toInt() == 0 ||
-            adress!= "localhost" && ipValid.indexIn(adress) == -1){
+            (adress!= "localhost" && ipValid_.indexIn(adress) == -1)){
         buttons_.setEnabled(false);
     }else{
         buttons_.setEnabled(true);
     }
+}
+
+bool InfoDialog::pseudoIsValid(const QString &pseudo)
+{
+    return !pseudo.isEmpty() && pseudoValid_.indexIn(pseudo) == -1;
 }
 
 

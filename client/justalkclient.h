@@ -2,7 +2,7 @@
 #ifndef JUSTALK_CLIENT
 #define JUSTALK_CLIENT
 
-#define DEBUG 0
+#define DEBUG 1
 
 #include <QMainWindow>
 #include <QTcpSocket>
@@ -12,6 +12,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QApplication>
+#include <QRegExp>
 
 
 #include "../actionlist.h"

@@ -1,6 +1,5 @@
 #include "justalkclient.h"
 
-#include <QRegExp>
 
 JusTalkClient::JusTalkClient(QWidget *parent) :
     QMainWindow(parent)
@@ -31,18 +30,20 @@ JusTalkClient::JusTalkClient(QWidget *parent) :
 
 void JusTalkClient::roomContextMenu(QPoint p)
 {
-    QPoint globalPos = userListWidget->mapToGlobal(p);
+    if(userListWidget->selectedItems().size() == 1){
+        QPoint globalPos = userListWidget->mapToGlobal(p);
 
-    QMenu ctxMenu;
-    ctxMenu.addAction("Wisper",this,SLOT(wisperTo()));
-    foreach (QListWidgetItem *itm, userListWidget->selectedItems()) {
-        if(blackListed_.contains(itm->text())){
-            ctxMenu.addAction("Remove from blacklist",this,SLOT(removeFromBlacklist()));
-        }else{
-            ctxMenu.addAction("Add to blacklist",this,SLOT(addToBlackList()));
+        QMenu ctxMenu;
+        ctxMenu.addAction("Wisper",this,SLOT(wisperTo()));
+        foreach (QListWidgetItem *itm, userListWidget->selectedItems()) {
+            if(blackListed_.contains(itm->text())){
+                ctxMenu.addAction("Remove from blacklist",this,SLOT(removeFromBlacklist()));
+            }else{
+                ctxMenu.addAction("Add to blacklist",this,SLOT(addToBlackList()));
+            }
         }
+        ctxMenu.exec(globalPos);
     }
-    ctxMenu.exec(globalPos);
 }
 
 void JusTalkClient::answerWhisper(QString text)
@@ -146,13 +147,17 @@ void JusTalkClient::readWhisper(QRegExp reg, QString)
         lastWhisper_ = to;
         title = "<b>[me->" + to + "]</b>";
     }else if(to == pseudo_){
-        lastWhisper_ = from;
-        title = "<b>[" + from +"->you] </b>";
+        if(!blackListed_.contains(from)){
+            lastWhisper_ = from;
+            title = "<b>[" + from +"->you] </b>";
+        }
     }else{
         lastWhisper_ = "";
         title = QString("<b>[%1->%2]</b>").arg(from).arg(to);
     }
-    roomTextEdit->append(title + ":" + msg);
+
+    if(!title.isEmpty() && !msg.isEmpty())
+        roomTextEdit->append(title + ":" + msg);
 }
 
 void JusTalkClient::readKicked(QRegExp reg, QString)
@@ -226,9 +231,9 @@ void JusTalkClient::readUserList(QRegExp reg, QString)
     QStringList users = reg.cap(1).split(",");
     userListWidget->clear();
     foreach (QString user, users) {
-        QListWidgetItem *item = new QListWidgetItem(user,userListWidget);
-        if(user == pseudo_)
-            item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
+        if(user != pseudo_)
+             new QListWidgetItem(user,userListWidget);
+
     }
 }
 
