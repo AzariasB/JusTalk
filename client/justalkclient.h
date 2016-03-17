@@ -2,7 +2,7 @@
 #ifndef JUSTALK_CLIENT
 #define JUSTALK_CLIENT
 
-#define DEBUG 1
+#define DEBUG 0
 
 #include <QMainWindow>
 #include <QTcpSocket>
@@ -129,6 +129,9 @@ class JusTalkClient : public QMainWindow, public Ui::MainWindow
         void answerWhisper(QString text);
 
     private:
+        void writeMessage(QString author,QString message);
+
+
         ActionList actions_;
 
         // This is the socket that will let us communitate with the server.

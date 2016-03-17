@@ -145,25 +145,25 @@ void JusTalkClient::readWhisper(QRegExp reg, QString)
     QString title;
     if(from == pseudo_){
         lastWhisper_ = to;
-        title = "<b>[me->" + to + "]</b>";
+        title = "[me->" + to + "]";
     }else if(to == pseudo_){
         if(!blackListed_.contains(from)){
             lastWhisper_ = from;
-            title = "<b>[" + from +"->you] </b>";
+            title = "[" + from +"->you]";
         }
     }else{
         lastWhisper_ = "";
-        title = QString("<b>[%1->%2]</b>").arg(from).arg(to);
+        title = QString("[%1->%2]").arg(from).arg(to);
     }
 
     if(!title.isEmpty() && !msg.isEmpty())
-        roomTextEdit->append(title + ":" + msg);
+        writeMessage(title,msg);
 }
 
 void JusTalkClient::readKicked(QRegExp reg, QString)
 {
     QString reason = reg.cap(1);
-    roomTextEdit->append("<b>You have been kicked, reason :</b>: " + reason);
+    writeMessage("You have been kicked, reason",reason);
     userListWidget->clear();
 }
 
@@ -237,13 +237,29 @@ void JusTalkClient::readUserList(QRegExp reg, QString)
     }
 }
 
+void JusTalkClient::writeMessage(QString author, QString message)
+{
+    QString style = "margin:0;";
+    if(author == "Server"){
+        style += "background-color:cyan;";
+    }
+    QString res = QString("<span style='%3' ><b>%1 : </b>%2</span>")
+            .arg(author)
+            .arg(message)
+            .arg(style);
+
+    roomTextEdit->append(res);
+}
+
+
 void JusTalkClient::readUserMessage(QRegExp reg, QString)
 {
     QString user = reg.cap(1);
+
     if(!blackListed_.contains(user)){
         QString message = reg.cap(2);
         user = user.replace(pseudo_,"me");
-        roomTextEdit->append("<b>" + user + "</b>: " + message);
+        writeMessage(user,message);
     }
 }
 

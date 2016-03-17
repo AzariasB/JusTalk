@@ -16,3 +16,5 @@ build/
 /doc/*
 !/doc/doc.pdf
 !/doc/doc.tex
+
+*_exe
